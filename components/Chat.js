@@ -1,30 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useLayoutEffect } from "react";
 import { Platform, KeyboardAvoidingView, SafeAreaView } from "react-native";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { Button, Icon } from "react-native-elements";
 import { connect } from "react-redux";
 import { actionCreators } from "../reducers";
 
-let Chat = ({ messages, fetchMessages, token, socket, route }) => {
+let Chat = ({ messages, fetchMessages, token, socket, route, navigation }) => {
   const user = { _id: 22 };
-  const { id } = route.params;
-  const wrapperStyle = { right: { backgroundColor: "#03A34A" } };
+  const { chat } = route.params;
+  const options = {
+    headerRight: () => {
+      return (
+        <Button
+          icon={<Icon name="info" />}
+          type="clear"
+          onPress={() => navigation.navigate("ChatDetails", { chat })}
+        />
+      );
+    }
+  };
+  useLayoutEffect(() => {
+    navigation.setOptions(options);
+  });
 
+  const wrapperStyle = { right: { backgroundColor: "#03A34A" } };
   const renderBubble = props => (
     <Bubble {...props} wrapperStyle={wrapperStyle} />
   );
 
   const send = messages => {
     messages.forEach(message => {
-      const data = { content: message.text, chat_id: id };
+      const data = { content: message.text, chat_id: chat.id };
       socket.send(data);
     });
   };
 
   useEffect(() => {
-    fetchMessages(id);
+    fetchMessages(chat.id);
   }, [token]);
 
-  const chat = (
+  const chatInterface = (
     <GiftedChat
       messages={messages}
       onSend={send}
@@ -40,11 +55,11 @@ let Chat = ({ messages, fetchMessages, token, socket, route }) => {
         keyboardVerticalOffset={30}
         enabled
       >
-        {chat}
+        {chatInterface}
       </KeyboardAvoidingView>
     );
   }
-  return <SafeAreaView style={{ flex: 1 }}>{chat}</SafeAreaView>;
+  return <SafeAreaView style={{ flex: 1 }}>{chatInterface}</SafeAreaView>;
 };
 
 const mapStateToProps = state => ({

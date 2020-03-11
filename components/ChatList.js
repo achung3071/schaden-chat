@@ -11,8 +11,8 @@ import {
 import { connect } from "react-redux";
 
 let ChatList = ({ chats, navigation }) => {
-  const goToChat = id => {
-    navigation.navigate("Chat", { id });
+  const goToChat = chat => {
+    navigation.navigate("Chat", { chat });
   };
 
   return (
@@ -21,7 +21,7 @@ let ChatList = ({ chats, navigation }) => {
         <TouchableOpacity
           style={styles.chat}
           key={chat.id}
-          onPress={() => goToChat(chat.id)}
+          onPress={() => goToChat(chat)}
         >
           <View style={styles.chatRow}>
             <Text style={styles.chatName}>{chat.name}</Text>

@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import ChatList from "./ChatList";
 import Chat from "./Chat";
+import ChatDetails from "./ChatDetails";
 import { AsyncStorage } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
-import { Button, Icon } from "react-native-elements";
 import { actionCreators } from "../reducers";
 import { connect } from "react-redux";
 
@@ -40,15 +40,12 @@ let Navigator = ({ token, getChats, setToken }) => {
     colors: { ...DefaultTheme.colors, background: "#FFFFFF" }
   };
 
-  const options = {
-    headerRight: () => <Button icon={<Icon name="info" />} type="clear" />
-  };
-
   return (
     <NavigationContainer theme={MyTheme}>
       <Stack.Navigator initialRouteName="ChatList">
         <Stack.Screen name="ChatList" component={ChatList} />
-        <Stack.Screen name="Chat" component={Chat} options={options} />
+        <Stack.Screen name="Chat" component={Chat} />
+        <Stack.Screen name="ChatDetails" component={ChatDetails} />
       </Stack.Navigator>
     </NavigationContainer>
   );
