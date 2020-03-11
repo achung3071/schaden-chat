@@ -39,13 +39,24 @@ let Navigator = ({ token, getChats, setToken }) => {
     ...DefaultTheme,
     colors: { ...DefaultTheme.colors, background: "#FFFFFF" }
   };
+  const screenOpts = { headerTitleAlign: "center" };
+  const chatListOpts = { title: "Messages" };
+  const chatDetailsOpts = { title: "Details" };
 
   return (
     <NavigationContainer theme={MyTheme}>
-      <Stack.Navigator initialRouteName="ChatList">
-        <Stack.Screen name="ChatList" component={ChatList} />
+      <Stack.Navigator initialRouteName="ChatList" screenOptions={screenOpts}>
+        <Stack.Screen
+          name="ChatList"
+          component={ChatList}
+          options={chatListOpts}
+        />
         <Stack.Screen name="Chat" component={Chat} />
-        <Stack.Screen name="ChatDetails" component={ChatDetails} />
+        <Stack.Screen
+          name="ChatDetails"
+          component={ChatDetails}
+          options={chatDetailsOpts}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

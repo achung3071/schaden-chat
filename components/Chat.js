@@ -9,15 +9,14 @@ let Chat = ({ messages, fetchMessages, token, socket, route, navigation }) => {
   const user = { _id: 22 };
   const { chat } = route.params;
   const options = {
-    headerRight: () => {
-      return (
-        <Button
-          icon={<Icon name="info" />}
-          type="clear"
-          onPress={() => navigation.navigate("ChatDetails", { chat })}
-        />
-      );
-    }
+    title: chat.name,
+    headerRight: () => (
+      <Button
+        icon={<Icon name="info" />}
+        type="clear"
+        onPress={() => navigation.navigate("ChatDetails", { chat })}
+      />
+    )
   };
   useLayoutEffect(() => {
     navigation.setOptions(options);

@@ -14,10 +14,17 @@ let ChatList = ({ chats, navigation }) => {
   const goToChat = chat => {
     navigation.navigate("Chat", { chat });
   };
+  const incomingRequest = (chat, userId) =>
+    chat.status === 1 && chat.initiator !== userId;
+  const initiatedChats = chats.filter(chat => incomingRequest(chat, 22));
+  const activeChats = chats.filter(chat => !incomingRequest(chat, 22));
 
   return (
     <View>
-      {chats.map(chat => (
+      <TouchableOpacity style={styles.chat}>
+        <Text>{initiatedChats.length} Requests</Text>
+      </TouchableOpacity>
+      {activeChats.map(chat => (
         <TouchableOpacity
           style={styles.chat}
           key={chat.id}

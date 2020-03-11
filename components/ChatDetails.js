@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Text, Switch, StyleSheet } from "react-native";
 
 let ChatDetails = ({ route }) => {
   const { chat } = route.params;
@@ -12,7 +12,10 @@ let ChatDetails = ({ route }) => {
         <Text>View Origin Post/Review</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.row}>
-        <Text>Mute Messages</Text>
+        <Text style={styles.action}>Mute Messages</Text>
+        <View style={styles.toggle}>
+          <Switch />
+        </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.row}>
         <Text>Leave Chat</Text>
@@ -23,7 +26,13 @@ let ChatDetails = ({ route }) => {
 
 const styles = StyleSheet.create({
   screen: { paddingVertical: "10px" },
-  row: { paddingHorizontal: "20px", paddingVertical: "15px" }
+  row: {
+    flexDirection: "row",
+    paddingHorizontal: "20px",
+    paddingVertical: "15px"
+  },
+  action: { flex: 3 },
+  toggle: { flex: 1, alignItems: "flex-end" }
 });
 
 export default ChatDetails;
