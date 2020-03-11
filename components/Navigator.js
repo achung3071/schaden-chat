@@ -1,14 +1,13 @@
 import React, { useEffect } from "react";
-import ChatList from "./ChatList";
-import Chat from "./Chat";
-import ChatDetails from "./ChatDetails";
+import ChatScreen from "./ChatScreen";
+import ChatNameModal from "./ChatNameModal";
 import { AsyncStorage } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { actionCreators } from "../reducers";
 import { connect } from "react-redux";
 
-const Stack = createStackNavigator();
+const RootStack = createStackNavigator();
 const jwt = // Token for user id 22
   "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzNTQ2MTYsImlhdCI6MTU4MzgxODYxNiwic3ViIjoyMn0.WR1XQUlsCbp0YwzmzquxxrAWKF2Yx5FIYOt-S6stpzA";
 
@@ -39,25 +38,16 @@ let Navigator = ({ token, getChats, setToken }) => {
     ...DefaultTheme,
     colors: { ...DefaultTheme.colors, background: "#FFFFFF" }
   };
-  const screenOpts = { headerTitleAlign: "center" };
-  const chatListOpts = { title: "Messages" };
-  const chatDetailsOpts = { title: "Details" };
 
   return (
     <NavigationContainer theme={MyTheme}>
-      <Stack.Navigator initialRouteName="ChatList" screenOptions={screenOpts}>
-        <Stack.Screen
-          name="ChatList"
-          component={ChatList}
-          options={chatListOpts}
-        />
-        <Stack.Screen name="Chat" component={Chat} />
-        <Stack.Screen
-          name="ChatDetails"
-          component={ChatDetails}
-          options={chatDetailsOpts}
-        />
-      </Stack.Navigator>
+      <RootStack.Navigator
+        initialRouteName="ChatScreen"
+        screenOptions={{ headerShown: false }}
+      >
+        <RootStack.Screen name="ChatScreen" component={ChatScreen} />
+        <RootStack.Screen name="ChatNameModal" component={ChatNameModal} />
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 };
@@ -65,12 +55,10 @@ let Navigator = ({ token, getChats, setToken }) => {
 const mapStateToProps = state => ({
   token: state.token
 });
-
 const mapDispatchToProps = dispatch => ({
   setToken: token => dispatch(actionCreators.setToken(token)),
   getChats: () => dispatch(actionCreators.getChats())
 });
-
 Navigator = connect(mapStateToProps, mapDispatchToProps)(Navigator);
 
 export default Navigator;

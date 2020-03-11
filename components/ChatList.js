@@ -12,7 +12,7 @@ import { connect } from "react-redux";
 
 let ChatList = ({ chats, navigation }) => {
   const goToChat = chat => {
-    navigation.navigate("Chat", { chat });
+    navigation.navigate("Chat", { id: chat.id });
   };
   const incomingRequest = (chat, userId) =>
     chat.status === 1 && chat.initiator !== userId;
@@ -64,7 +64,6 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => ({
   chats: state.chats
 });
-
 ChatList = connect(mapStateToProps)(ChatList);
 
 export default ChatList;

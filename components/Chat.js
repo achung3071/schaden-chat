@@ -2,41 +2,55 @@ import React, { useEffect, useLayoutEffect } from "react";
 import { Platform, KeyboardAvoidingView, SafeAreaView } from "react-native";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
 import { Button, Icon } from "react-native-elements";
+import { HeaderBackButton } from "react-navigation-stack";
 import { connect } from "react-redux";
 import { actionCreators } from "../reducers";
 
-let Chat = ({ messages, fetchMessages, token, socket, route, navigation }) => {
+let Chat = ({
+  chats,
+  messages,
+  fetchMessages,
+  token,
+  socket,
+  route,
+  navigation
+}) => {
   const user = { _id: 22 };
-  const { chat } = route.params;
-  const options = {
-    title: chat.name,
-    headerRight: () => (
-      <Button
-        icon={<Icon name="info" />}
-        type="clear"
-        onPress={() => navigation.navigate("ChatDetails", { chat })}
-      />
-    )
-  };
+  const { id } = route.params;
+  const chat = chats.find(chat => chat.id === id);
+
   useLayoutEffect(() => {
-    navigation.setOptions(options);
-  });
+    navigation.setOptions({
+      title: chat.name,
+      headerLeft: () => (
+        // go back to ChatList (needed b/c of navigation.replace from ChatDetails)
+        <HeaderBackButton onPress={navigation.popToTop} />
+      ),
+      headerRight: () => (
+        <Button
+          icon={<Icon name="info" />}
+          type="clear"
+          onPress={() => navigation.navigate("ChatDetails", { id })}
+        />
+      )
+    });
+  }, []);
+
+  useEffect(() => {
+    fetchMessages(id);
+  }, [token]);
+
+  const send = messages => {
+    messages.forEach(message => {
+      const data = { content: message.text, chat_id: id };
+      socket.send(data);
+    });
+  };
 
   const wrapperStyle = { right: { backgroundColor: "#03A34A" } };
   const renderBubble = props => (
     <Bubble {...props} wrapperStyle={wrapperStyle} />
   );
-
-  const send = messages => {
-    messages.forEach(message => {
-      const data = { content: message.text, chat_id: chat.id };
-      socket.send(data);
-    });
-  };
-
-  useEffect(() => {
-    fetchMessages(chat.id);
-  }, [token]);
 
   const chatInterface = (
     <GiftedChat
@@ -62,15 +76,14 @@ let Chat = ({ messages, fetchMessages, token, socket, route, navigation }) => {
 };
 
 const mapStateToProps = state => ({
+  chats: state.chats,
   messages: state.messages,
   token: state.token,
   socket: state.socket
 });
-
 const mapDispatchToProps = dispatch => ({
   fetchMessages: id => dispatch(actionCreators.fetchMessages(id))
 });
-
 Chat = connect(mapStateToProps, mapDispatchToProps)(Chat);
 
 export default Chat;

@@ -25,12 +25,8 @@ export const actionCreators = {
     try {
       const { token } = getState();
       const headers = { Authorization: `Bearer ${token}` };
-      const endpoint = `http://localhost:5000/message?chat=${id}`;
-      const response = await axios({
-        method: "GET",
-        url: endpoint,
-        headers
-      });
+      const url = `http://localhost:5000/message?chat=${id}`;
+      const response = await axios({ method: "GET", url, headers });
       let messages = response.data["response"];
       messages = messages.map(toGiftedMessage);
       dispatch({ type: types.SET_CURRENT_CHAT, payload: id });
@@ -79,6 +75,24 @@ export const actionCreators = {
       console.log(err);
     });
     dispatch({ type: types.SET_SOCKET, payload: socket });
+  },
+
+  editChat: (data, id) => async (dispatch, getState) => {
+    try {
+      let { chats, token } = getState();
+      chats = chats.slice();
+      const headers = { Authorization: `Bearer ${token}` };
+      const url = `http://localhost:5000/chat/${id}`;
+      const options = { method: "PUT", url, data, headers };
+      const response = await axios(options);
+      const editedChat = response.data["response"];
+      const index = chats.findIndex(chat => chat.id === id);
+      editedChat.lastMessage = chats[index].lastMessage;
+      chats[index] = editedChat;
+      dispatch({ type: types.SET_CHATS, payload: chats });
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   setToken: token => (dispatch, getState) => {

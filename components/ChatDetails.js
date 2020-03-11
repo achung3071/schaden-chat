@@ -1,11 +1,25 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import { View, TouchableOpacity, Text, Switch, StyleSheet } from "react-native";
+import { HeaderBackButton } from "react-navigation-stack";
+import { connect } from "react-redux";
 
-let ChatDetails = ({ route }) => {
-  const { chat } = route.params;
+let ChatDetails = ({ chats, route, navigation }) => {
+  const { id } = route.params;
+  const chat = chats.find(chat => chat.id === id);
+  const openModal = () => navigation.navigate("ChatNameModal", { id });
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        /* need to replace because goBack navigates to prev mounted component, which
+        may have a different title (if name was changed). navigation.setOptions
+        cannot re-render the headerTitle on an already mounted component. */
+        <HeaderBackButton onPress={() => navigation.replace("Chat", { id })} />
+      )
+    });
+  }, []);
   return (
     <View style={styles.screen}>
-      <TouchableOpacity style={styles.row}>
+      <TouchableOpacity style={styles.row} onPress={openModal}>
         <Text>Chat Name: {chat.name}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.row}>
@@ -34,5 +48,8 @@ const styles = StyleSheet.create({
   action: { flex: 3 },
   toggle: { flex: 1, alignItems: "flex-end" }
 });
+
+const mapStateToProps = state => ({ chats: state.chats });
+ChatDetails = connect(mapStateToProps)(ChatDetails);
 
 export default ChatDetails;
