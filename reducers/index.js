@@ -1,11 +1,21 @@
 import axios from "axios";
 import io from "socket.io-client";
 
+const toGiftedMessage = message => {
+  const { id, content, date_created, user_id } = message;
+  return {
+    _id: id,
+    text: content,
+    createdAt: new Date(date_created),
+    user: { _id: user_id }
+  };
+};
+
 export const types = {
   ADD_MESSAGE: "ADD_MESSAGE",
   FETCH_MESSAGES: "FETCH_MESSAGES",
-  GET_CHATS: "GET_CHATS",
   SET_CURRENT_CHAT: "SET_CURRENT_CHAT",
+  SET_CHATS: "SET_CHATS",
   SET_SOCKET: "SET_SOCKET",
   SET_TOKEN: "SET_TOKEN"
 };
@@ -21,38 +31,52 @@ export const actionCreators = {
         url: endpoint,
         headers
       });
-      const messages = response.data["response"];
+      let messages = response.data["response"];
+      messages = messages.map(toGiftedMessage);
       dispatch({ type: types.SET_CURRENT_CHAT, payload: id });
       dispatch({ type: types.FETCH_MESSAGES, payload: messages });
     } catch (err) {
-      console.error(err.message);
+      console.log(err);
     }
   },
 
   getChats: () => (dispatch, getState) => {
     const { token } = getState();
+    const headers = { Authorization: `Bearer ${token}` };
     const options = {
       transportOptions: {
         polling: {
-          extraHeaders: {
-            Authorization: `Bearer ${token}`
-          }
+          extraHeaders: headers
         }
       }
     };
     const socket = io("http://localhost:5000", options);
     socket.emit("join_chats");
-    socket.on("join_chats", chats => {
-      dispatch({ type: types.GET_CHATS, payload: chats });
+    socket.on("join_chats", async chats => {
+      for (const chat of chats) {
+        const url = `http://localhost:5000/message?chat=${chat.id}`;
+        const options = { method: "GET", url, headers };
+        const response = await axios(options);
+        chat.lastMessage = response.data["response"][0];
+      }
+      dispatch({ type: types.SET_CHATS, payload: chats });
     });
     socket.on("message", message => {
-      const { currentChat } = getState();
-      if (message.chat_id == currentChat) {
+      let { chats, currentChat } = getState();
+      chats = chats.map(chat => {
+        if (chat.id === message.chat_id) {
+          chat.lastMessage = message;
+        }
+        return chat;
+      });
+      dispatch({ type: types.SET_CHATS, payload: chats });
+      if (message.chat_id === currentChat) {
+        message = toGiftedMessage(message);
         dispatch({ type: types.ADD_MESSAGE, payload: message });
       }
     });
     socket.on("error", err => {
-      console.error(err);
+      console.log(err);
     });
     dispatch({ type: types.SET_SOCKET, payload: socket });
   },
@@ -67,7 +91,7 @@ const initialState = {
   currentChat: null,
   messages: [],
   socket: null,
-  token: ""
+  token: "dummy"
 };
 
 const reducer = (state = initialState, action) => {
@@ -80,7 +104,7 @@ const reducer = (state = initialState, action) => {
     case types.FETCH_MESSAGES: {
       return { ...state, messages: payload };
     }
-    case types.GET_CHATS: {
+    case types.SET_CHATS: {
       return { ...state, chats: payload };
     }
     case types.SET_CURRENT_CHAT: {
@@ -93,7 +117,6 @@ const reducer = (state = initialState, action) => {
       return { ...state, socket: payload };
     }
   }
-
   return state;
 };
 

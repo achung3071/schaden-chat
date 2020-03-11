@@ -1,58 +1,51 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet
-} from "react-native";
+import React, { useEffect } from "react";
+import { Platform, KeyboardAvoidingView, SafeAreaView } from "react-native";
+import { GiftedChat, Bubble } from "react-native-gifted-chat";
 import { connect } from "react-redux";
 import { actionCreators } from "../reducers";
 
-let Chat = ({ id = 1, messages, fetchMessages, token, socket }) => {
-  const [content, setContent] = useState("");
+let Chat = ({ messages, fetchMessages, token, socket, route }) => {
+  const user = { _id: 22 };
+  const { id } = route.params;
+  const wrapperStyle = { right: { backgroundColor: "#03A34A" } };
+
+  const renderBubble = props => (
+    <Bubble {...props} wrapperStyle={wrapperStyle} />
+  );
+
+  const send = messages => {
+    messages.forEach(message => {
+      const data = { content: message.text, chat_id: id };
+      socket.send(data);
+    });
+  };
 
   useEffect(() => {
     fetchMessages(id);
   }, [token]);
 
-  return (
-    <View>
-      {messages
-        .slice()
-        .reverse()
-        .map(message => (
-          <View>
-            <Text>{message.content}</Text>
-          </View>
-        ))}
-      <TextInput
-        style={styles.messageInput}
-        placeholder="Type your message..."
-        onChangeText={setContent}
-        value={content}
-      />
-      <TouchableOpacity onPress={() => socket.send({ content, chat_id: id })}>
-        <Text>Send</Text>
-      </TouchableOpacity>
-    </View>
+  const chat = (
+    <GiftedChat
+      messages={messages}
+      onSend={send}
+      user={user}
+      renderBubble={renderBubble}
+    />
   );
-};
-
-const offset = 24;
-const styles = StyleSheet.create({
-  buttonText: {
-    marginLeft: offset,
-    fontSize: offset
-  },
-  messageInput: {
-    height: offset * 2,
-    margin: offset,
-    paddingHorizontal: offset,
-    borderColor: "#111111",
-    borderWidth: 1
+  if (Platform.OS === "android") {
+    return (
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={30}
+        enabled
+      >
+        {chat}
+      </KeyboardAvoidingView>
+    );
   }
-});
+  return <SafeAreaView style={{ flex: 1 }}>{chat}</SafeAreaView>;
+};
 
 const mapStateToProps = state => ({
   messages: state.messages,
