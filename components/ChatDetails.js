@@ -8,6 +8,7 @@ import {
   StyleSheet
 } from "react-native";
 import { HeaderBackButton } from "react-navigation-stack";
+import { actionCreators } from "../reducers";
 import { connect } from "react-redux";
 
 let ChatDetails = ({ chats, route, navigation, editChat }) => {
@@ -64,11 +65,11 @@ let ChatDetails = ({ chats, route, navigation, editChat }) => {
 };
 
 const styles = StyleSheet.create({
-  screen: { paddingVertical: "10px" },
+  screen: { paddingVertical: 10 },
   row: {
     flexDirection: "row",
-    paddingHorizontal: "20px",
-    paddingVertical: "15px"
+    paddingHorizontal: 20,
+    paddingVertical: 15
   },
   action: { flex: 3 },
   toggle: { flex: 1, alignItems: "flex-end" }
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => ({ chats: state.chats });
 const mapDispatchToProps = dispatch => ({
-  editChat: (data, id) => dispatch(actionCreators.editChat(data, id))
+  editChat: data => dispatch(actionCreators.editChat(data))
 });
 ChatDetails = connect(mapStateToProps, mapDispatchToProps)(ChatDetails);
 

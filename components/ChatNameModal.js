@@ -17,7 +17,7 @@ let ChatNameModal = ({ chats, editChat, route, navigation }) => {
     status = "Extended";
   }
   const onSubmit = () => {
-    editChat({ name, status }, id);
+    editChat({ name, status });
     navigation.goBack();
   };
 
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => ({ chats: state.chats });
 const mapDispatchToProps = dispatch => ({
-  editChat: (data, id) => dispatch(actionCreators.editChat(data, id))
+  editChat: data => dispatch(actionCreators.editChat(data))
 });
 ChatNameModal = connect(mapStateToProps, mapDispatchToProps)(ChatNameModal);
 

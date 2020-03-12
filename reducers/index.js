@@ -83,18 +83,23 @@ export const actionCreators = {
     }
   },
 
-  editChat: (data, id) => async (dispatch, getState) => {
+  editChat: data => async (dispatch, getState) => {
     try {
-      let { chats, token } = getState();
-      chats = chats.slice();
+      let { chats, currentChat, token } = getState();
       const headers = { Authorization: `Bearer ${token}` };
-      const url = `http://localhost:5000/chat/${id}`;
+      const url = `http://localhost:5000/chat/${currentChat}`;
       const options = { method: "PUT", url, data, headers };
       const response = await axios(options);
       const editedChat = response.data["response"];
-      const index = chats.findIndex(chat => chat.id === id);
-      editedChat.lastMessage = chats[index].lastMessage;
-      chats[index] = editedChat;
+      const { id, status } = editedChat;
+      if (status === 4 || status === 5 || status === 6) {
+        chats = chats.filter(chat => chat !== id);
+      } else {
+        chats = chats.slice();
+        const index = chats.findIndex(chat => chat.id === id);
+        editedChat.lastMessage = chats[index].lastMessage;
+        chats[index] = editedChat;
+      }
       dispatch({ type: types.SET_CHATS, payload: chats });
     } catch (err) {
       console.log(err);
