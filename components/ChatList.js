@@ -51,8 +51,8 @@ let ChatList = ({ chats, navigation }) => {
 
 const styles = StyleSheet.create({
   chat: {
-    padding: "20px",
-    borderBottomWidth: "1px",
+    padding: 20,
+    borderBottomWidth: 1,
     borderBottomColor: "#D8D8D8"
   },
   chatRow: { flexDirection: "row" },
