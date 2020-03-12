@@ -11,6 +11,8 @@ const toGiftedMessage = message => {
   };
 };
 
+let emit, send; // for preserving original socket methods
+
 export const types = {
   ADD_MESSAGE: "ADD_MESSAGE",
   FETCH_MESSAGES: "FETCH_MESSAGES",
@@ -37,44 +39,48 @@ export const actionCreators = {
   },
 
   getChats: () => (dispatch, getState) => {
-    const { token } = getState();
-    const headers = { Authorization: `Bearer ${token}` };
-    const options = {
-      transportOptions: {
-        polling: {
-          extraHeaders: headers
+    let { socket, token } = getState();
+    if (socket) {
+      // update token that is being sent with every request
+      socket.emit = (event, data) => emit(event, { ...data, token });
+      socket.send = data => send({ ...data, token });
+      socket.emit("join_chats"); // Join and set chats
+    } else {
+      socket = io("ws://localhost:5000", { transports: ["websocket"] });
+      emit = socket.emit.bind(socket);
+      send = socket.send.bind(socket);
+      socket.on("join_chats", async chats => {
+        for (const chat of chats) {
+          // need to call getState again, else token val stays constant
+          const { token } = getState();
+          const headers = { Authorization: `Bearer ${token}` };
+          const url = `http://localhost:5000/message?chat=${chat.id}`;
+          const options = { method: "GET", url, headers };
+          const response = await axios(options);
+          chat.lastMessage = response.data["response"][0];
         }
-      }
-    };
-    const socket = io("http://localhost:5000", options);
-    socket.emit("join_chats");
-    socket.on("join_chats", async chats => {
-      for (const chat of chats) {
-        const url = `http://localhost:5000/message?chat=${chat.id}`;
-        const options = { method: "GET", url, headers };
-        const response = await axios(options);
-        chat.lastMessage = response.data["response"][0];
-      }
-      dispatch({ type: types.SET_CHATS, payload: chats });
-    });
-    socket.on("message", message => {
-      let { chats, currentChat } = getState();
-      chats = chats.map(chat => {
-        if (chat.id === message.chat_id) {
-          chat.lastMessage = message;
-        }
-        return chat;
+        dispatch({
+          type: types.SET_CHATS,
+          payload: chats
+        });
       });
-      dispatch({ type: types.SET_CHATS, payload: chats });
-      if (message.chat_id === currentChat) {
-        message = toGiftedMessage(message);
-        dispatch({ type: types.ADD_MESSAGE, payload: message });
-      }
-    });
-    socket.on("error", err => {
-      console.log(err);
-    });
-    dispatch({ type: types.SET_SOCKET, payload: socket });
+      socket.on("message", message => {
+        let { chats, currentChat } = getState();
+        chats = chats.map(chat => {
+          if (chat.id === message.chat_id) {
+            chat.lastMessage = message;
+          }
+          return chat;
+        });
+        dispatch({ type: types.SET_CHATS, payload: chats });
+        if (message.chat_id === currentChat) {
+          message = toGiftedMessage(message);
+          dispatch({ type: types.ADD_MESSAGE, payload: message });
+        }
+      });
+      socket.on("error", err => console.log(err));
+      dispatch({ type: types.SET_SOCKET, payload: socket });
+    }
   },
 
   editChat: (data, id) => async (dispatch, getState) => {
