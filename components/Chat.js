@@ -2,7 +2,6 @@ import React, { useEffect, useLayoutEffect } from "react";
 import { Platform, KeyboardAvoidingView, SafeAreaView } from "react-native";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
 import { Button, Icon } from "react-native-elements";
-import { HeaderBackButton } from "react-navigation-stack";
 import { connect } from "react-redux";
 import { actionCreators } from "../reducers";
 
@@ -22,10 +21,6 @@ let Chat = ({
   useLayoutEffect(() => {
     navigation.setOptions({
       title: chat.name,
-      headerLeft: () => (
-        // go back to ChatList (needed b/c of navigation.replace from ChatDetails)
-        <HeaderBackButton onPress={navigation.popToTop} />
-      ),
       headerRight: () => (
         <Button
           icon={<Icon name="info" />}

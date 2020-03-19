@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React from "react";
 import {
   Alert,
   View,
@@ -7,7 +7,6 @@ import {
   Switch,
   StyleSheet
 } from "react-native";
-import { HeaderBackButton } from "react-navigation-stack";
 import { actionCreators } from "../reducers";
 import { connect } from "react-redux";
 
@@ -15,16 +14,6 @@ let ChatDetails = ({ chats, route, navigation, editChat }) => {
   const { id } = route.params;
   const chat = chats.find(chat => chat.id === id);
   const openModal = () => navigation.navigate("ChatNameModal", { id });
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        /* need to replace because goBack navigates to prev mounted component, which
-        may have a different title (if name was changed). navigation.setOptions
-        cannot re-render the headerTitle on an already mounted component. */
-        <HeaderBackButton onPress={() => navigation.replace("Chat", { id })} />
-      )
-    });
-  }, []);
 
   const onPressLeave = () => {
     Alert.alert(
