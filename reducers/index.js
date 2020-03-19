@@ -1,6 +1,8 @@
 import axios from "axios";
 import io from "socket.io-client";
 
+const server = "localhost:5000";
+
 const toGiftedMessage = message => {
   const { id, content, date_created, user_id } = message;
   return {
@@ -27,7 +29,7 @@ export const actionCreators = {
     try {
       const { token } = getState();
       const headers = { Authorization: `Bearer ${token}` };
-      const url = `http://localhost:5000/message?chat=${id}`;
+      const url = `http://${server}/message?chat=${id}`;
       const response = await axios({ method: "GET", url, headers });
       let messages = response.data["response"];
       messages = messages.map(toGiftedMessage);
@@ -46,7 +48,7 @@ export const actionCreators = {
       socket.send = data => send({ ...data, token });
       socket.emit("join_chats"); // Join and set chats
     } else {
-      socket = io("ws://localhost:5000", { transports: ["websocket"] });
+      socket = io(`ws://${server}`, { transports: ["websocket"] });
       emit = socket.emit.bind(socket);
       send = socket.send.bind(socket);
       socket.on("join_chats", async chats => {
@@ -54,7 +56,7 @@ export const actionCreators = {
           // need to call getState again, else token val stays constant
           const { token } = getState();
           const headers = { Authorization: `Bearer ${token}` };
-          const url = `http://localhost:5000/message?chat=${chat.id}`;
+          const url = `http://${server}/message?chat=${chat.id}`;
           const options = { method: "GET", url, headers };
           const response = await axios(options);
           chat.lastMessage = response.data["response"][0];
@@ -87,7 +89,7 @@ export const actionCreators = {
     try {
       let { chats, currentChat, token } = getState();
       const headers = { Authorization: `Bearer ${token}` };
-      const url = `http://localhost:5000/chat/${currentChat}`;
+      const url = `http://${server}/chat/${currentChat}`;
       const options = { method: "PUT", url, data, headers };
       const response = await axios(options);
       const editedChat = response.data["response"];
